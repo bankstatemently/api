@@ -62,9 +62,9 @@ You can import it directly into Postman, Insomnia, or any OpenAPI-compatible too
 
 ## Supported Banks
 
-Bankstatemently supports **500+ banks** across the US, UK, Singapore, Australia, Hong Kong, Malaysia, and more.
+Works with **any bank worldwide** — upload a statement and the API handles detection automatically. A growing set of banks are independently accuracy-verified with published benchmark results.
 
-→ [View all supported banks](https://bankstatemently.com/banks)
+→ [View accuracy-verified banks](https://bankstatemently.com/banks)
 
 ---
 

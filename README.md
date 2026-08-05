@@ -1,77 +1,26 @@
 # Bankstatemently API
 
-**Convert bank statement PDFs into structured data — CSV, Excel, JSON, QBO, and Xero-compatible formats.**
+Bankstatemently API — turn bank statement PDFs into structured, spreadsheet-ready data. OpenAPI spec + integration guide.
 
-→ **Full documentation:** [bankstatemently.com/developers/api](https://bankstatemently.com/developers/api)
-→ **Interactive docs:** [Postman collection](https://documenter.getpostman.com/view/52862871/2sBXcKBHki)
-→ **MCP server:** [bankstatemently.com/developers/mcp](https://bankstatemently.com/developers/mcp)
+Current spec version: `1.0.0`.
 
----
+## What this API does
 
-## Overview
+Send a bank statement PDF, get back structured accounts, transactions, and
+metadata as JSON — or a ready-to-import CSV, XLSX, QBO, or Xero file.
 
-The Bankstatemently API lets you programmatically convert bank statement PDFs into clean, structured financial data. Upload a PDF, poll for completion, then export in the format your application needs.
+## Auth
 
-**Base URL:** `https://api.bankstatemently.com/v1`
+API key auth: pass `X-API-Key: bsk_live_...` on every request. Generate a
+key from your [dashboard](https://bankstatemently.com/developers).
 
-**Authentication:** API key via `X-API-Key` header. Get your key at [bankstatemently.com/developers](https://bankstatemently.com/developers).
+## Spec
 
----
+`openapi.json` in this repo is copied verbatim from the canonical,
+contract-tested spec on every sync — it is generated output, never hand-edited
+here. The same spec is served live at
+[`/v1/openapi.json`](https://api.bankstatemently.com/v1/openapi.json).
 
-## Quick Start
+## Docs
 
-```bash
-# 1. Upload a PDF
-curl -X POST https://api.bankstatemently.com/v1/documents \
-  -H "X-API-Key: your_api_key" \
-  -F "file=@statement.pdf"
-
-# 2. Poll for completion
-curl https://api.bankstatemently.com/v1/documents/{id} \
-  -H "X-API-Key: your_api_key"
-
-# 3. Export as CSV
-curl https://api.bankstatemently.com/v1/documents/{id}/export/csv \
-  -H "X-API-Key: your_api_key"
-```
-
----
-
-## Endpoints
-
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/v1/documents` | Upload a bank statement PDF |
-| `GET` | `/v1/documents/{id}` | Check processing status |
-| `GET` | `/v1/documents/{id}/export/json` | Export as JSON |
-| `GET` | `/v1/documents/{id}/export/csv` | Export as CSV |
-| `GET` | `/v1/documents/{id}/export/xlsx` | Export as Excel |
-| `GET` | `/v1/documents/{id}/export/qbo` | Export as QBO (QuickBooks) |
-| `GET` | `/v1/documents/{id}/export/xero` | Export as Xero CSV |
-| `GET` | `/v1/credits` | Get current credit balance |
-
----
-
-## OpenAPI Spec
-
-The full OpenAPI 3.1.0 spec is in [`openapi.yaml`](./openapi.yaml).
-
-You can import it directly into Postman, Insomnia, or any OpenAPI-compatible tool.
-
----
-
-## Supported Banks
-
-Works with **any bank worldwide** — upload a statement and the API handles detection automatically. A growing set of banks are independently accuracy-verified with published benchmark results.
-
-→ [View accuracy-verified banks](https://bankstatemently.com/banks)
-
----
-
-## Links
-
-- Website: [bankstatemently.com](https://bankstatemently.com)
-- API docs: [bankstatemently.com/developers/api](https://bankstatemently.com/developers/api)
-- MCP server: [bankstatemently.com/developers/mcp](https://bankstatemently.com/developers/mcp)
-- Postman: [View collection](https://documenter.getpostman.com/view/52862871/2sBXcKBHki)
-- Support: [help@bankstatemently.com](mailto:help@bankstatemently.com)
+Full integration guide: [https://bankstatemently.com/developers](https://bankstatemently.com/developers)

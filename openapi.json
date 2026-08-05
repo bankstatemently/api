@@ -22,9 +22,7 @@
         "operationId": "uploadDocument",
         "summary": "Upload a bank statement PDF",
         "description": "Upload a PDF bank statement for conversion. The file is processed asynchronously. Poll the returned `id` via GET /v1/documents/{id} to check progress. Rate limit: 10 requests per minute.",
-        "tags": [
-          "Documents"
-        ],
+        "tags": ["Documents"],
         "parameters": [
           {
             "name": "Idempotency-Key",
@@ -71,9 +69,7 @@
             "description": "Set to 'true' to reprocess a previously failed upload of the same file. Without this, re-uploading a failed file returns an already_processing error.",
             "schema": {
               "type": "string",
-              "enum": [
-                "true"
-              ]
+              "enum": ["true"]
             }
           }
         ],
@@ -197,14 +193,7 @@
                         "type": "invalid_request_error",
                         "code": "invalid_parameters",
                         "message": "Invalid webhook_url: Webhook URL must use HTTPS.",
-                        "meta": {
-                          "fields": [
-                            {
-                              "field": "webhook_url",
-                              "message": "Webhook URL must use HTTPS."
-                            }
-                          ]
-                        },
+                        "meta": { "fields": [{ "field": "webhook_url", "message": "Webhook URL must use HTTPS." }] },
                         "request_id": "req_8hLn2pTvX6i0jK4m"
                       }
                     }
@@ -231,10 +220,7 @@
                         "type": "quota_exceeded",
                         "code": "insufficient_credits",
                         "message": "Insufficient credits. This file requires 3 credit(s) but you have 1 remaining. Purchase more at https://bankstatemently.com/pricing.",
-                        "meta": {
-                          "credits_required": 3,
-                          "credits_remaining": 1
-                        },
+                        "meta": { "credits_required": 3, "credits_remaining": 1 },
                         "request_id": "req_8zAb2cDe4fGh6iJk"
                       }
                     }
@@ -246,10 +232,7 @@
                         "type": "quota_exceeded",
                         "code": "page_limit_exceeded",
                         "message": "Page limit exceeded. This file has 25 pages but your plan allows 10. Upgrade at https://bankstatemently.com/pricing.",
-                        "meta": {
-                          "page_count": 25,
-                          "page_limit": 10
-                        },
+                        "meta": { "page_count": 25, "page_limit": 10 },
                         "request_id": "req_0bDf4hJlN8c2eG6i"
                       }
                     }
@@ -261,9 +244,7 @@
                         "type": "quota_exceeded",
                         "code": "file_too_large",
                         "message": "File too large. Your plan allows files up to 10 MB. Upgrade at https://bankstatemently.com/pricing.",
-                        "meta": {
-                          "max_size_mb": 10
-                        },
+                        "meta": { "max_size_mb": 10 },
                         "request_id": "req_2dFh6jLnR0e4gI8k"
                       }
                     }
@@ -323,9 +304,7 @@
         "operationId": "listDocuments",
         "summary": "List recent documents",
         "description": "Retrieve a paginated list of your uploaded documents, ordered by creation date descending. Rate limit: 120 requests per minute.",
-        "tags": [
-          "Documents"
-        ],
+        "tags": ["Documents"],
         "parameters": [
           {
             "name": "limit",
@@ -442,9 +421,7 @@
         "operationId": "getDocument",
         "summary": "Get document processing status",
         "description": "Poll the status of an uploaded document. When status is `completed`, the response includes statement metadata and export URLs. Rate limit: 120 requests per minute.",
-        "tags": [
-          "Documents"
-        ],
+        "tags": ["Documents"],
         "parameters": [
           {
             "name": "id",
@@ -614,57 +591,40 @@
         "operationId": "getDocumentData",
         "summary": "Get structured document data",
         "description": "Retrieve structured document data including accounts and transactions. Only available when document status is `completed`. Transactions are paginated. Rate limit: 60 requests per minute.",
-        "tags": [
-          "Documents"
-        ],
+        "tags": ["Documents"],
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
             "description": "The document UUID.",
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
+            "schema": { "type": "string", "format": "uuid" }
           },
           {
             "name": "raw",
             "in": "query",
             "required": false,
             "description": "Set to `true` to include `originalData` (raw pre-normalization cell values) on each transaction. When enabled, max limit is reduced to 500.",
-            "schema": {
-              "type": "boolean",
-              "default": false
-            }
+            "schema": { "type": "boolean", "default": false }
           },
           {
             "name": "limit",
             "in": "query",
             "required": false,
             "description": "Maximum number of transactions per page.",
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 2000,
-              "default": 500
-            }
+            "schema": { "type": "integer", "minimum": 1, "maximum": 2000, "default": 500 }
           },
           {
             "name": "offset",
             "in": "query",
             "required": false,
             "description": "Number of transactions to skip for pagination.",
-            "schema": {
-              "type": "integer",
-              "minimum": 0,
-              "default": 0
-            }
+            "schema": { "type": "integer", "minimum": 0, "default": 0 }
           }
         ],
         "responses": {
           "200": {
-            "description": "Structured document data with accounts and transactions.",
+            "description": "Structured document data. Primary shape: document.statements[].products[].accounts[].transactions[]. Legacy flat accounts[] and transactions[] retained for backward compatibility.",
             "content": {
               "application/json": {
                 "example": {
@@ -679,15 +639,55 @@
                     "bankId": "dbs-bank-ltd",
                     "country": "SG",
                     "currency": "SGD",
-                    "languages": [
-                      "en"
-                    ],
+                    "languages": ["en"],
+                    "pageCount": 3,
                     "statementDate": "2026-01-31",
-                    "statementPeriod": {
-                      "from": "2026-01-01",
-                      "to": "2026-01-31"
-                    },
-                    "pageCount": 3
+                    "statementPeriod": { "from": "2026-01-01", "to": "2026-01-31" },
+                    "statements": [
+                      {
+                        "date": "2026-01-31",
+                        "period": { "from": "2026-01-01", "to": "2026-01-31" },
+                        "products": [
+                          {
+                            "productId": null,
+                            "productName": null,
+                            "currency": "SGD",
+                            "declared": [
+                              { "payload": { "kind": "balance:closing", "amount": 4250.75, "currency": "SGD" }, "ownership": { "level": "product" } }
+                            ],
+                            "categories": [],
+                            "accounts": [
+                              {
+                                "accountId": 0,
+                                "accountNumber": "XXX-X-XX1234",
+                                "accountHolderName": "John Doe",
+                                "currency": "SGD",
+                                "declared": [
+                                  { "payload": { "kind": "balance:opening", "amount": 5000.00, "currency": "SGD" }, "ownership": { "level": "account" } },
+                                  { "payload": { "kind": "balance:closing", "amount": 4250.75, "currency": "SGD" }, "ownership": { "level": "account" } },
+                                  { "payload": { "kind": "total", "amount": 1200.00, "currency": "SGD" }, "ownership": { "level": "account" }, "slice": { "direction": "credit" } },
+                                  { "payload": { "kind": "total", "amount": 1949.25, "currency": "SGD" }, "ownership": { "level": "account" }, "slice": { "direction": "debit" } }
+                                ],
+                                "categories": [],
+                                "transactions": [
+                                  {
+                                    "sequence": 0,
+                                    "date": "2026-01-02",
+                                    "description": "SALARY CREDIT",
+                                    "amount": 1200,
+                                    "direction": "credit",
+                                    "currency": "SGD",
+                                    "balance": 6200.00,
+                                    "accountId": 0,
+                                    "accountNumber": "XXX-X-XX1234"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
                   },
                   "accounts": [
                     {
@@ -695,13 +695,12 @@
                       "accountNumber": "XXX-X-XX1234",
                       "accountHolderName": "John Doe",
                       "currency": "SGD",
-                      "isPrimary": true,
-                      "totals": {
-                        "openingBalance": 5000,
-                        "closingBalance": 4250.75,
-                        "totalCredits": 1200,
-                        "totalDebits": 1949.25
-                      }
+                      "totals": { "openingBalance": 5000.00, "closingBalance": 4250.75, "totalCredits": 1200.00, "totalDebits": 1949.25 },
+                      "declared": [
+                        { "payload": { "kind": "balance:opening", "amount": 5000.00, "currency": "SGD" }, "ownership": { "level": "account" } },
+                        { "payload": { "kind": "balance:closing", "amount": 4250.75, "currency": "SGD" }, "ownership": { "level": "account" } }
+                      ],
+                      "categories": []
                     }
                   ],
                   "transactions": [
@@ -712,17 +711,12 @@
                       "amount": 1200,
                       "direction": "credit",
                       "currency": "SGD",
-                      "balance": 6200,
+                      "balance": 6200.00,
                       "accountId": 0,
                       "accountNumber": "XXX-X-XX1234"
                     }
                   ],
-                  "pagination": {
-                    "total": 47,
-                    "limit": 500,
-                    "offset": 0,
-                    "hasMore": false
-                  },
+                  "pagination": { "total": 47, "limit": 500, "offset": 0, "hasMore": false },
                   "exports": {
                     "json": "https://api.bankstatemently.com/v1/documents/d290f1ee-6c54-4b01-90e6-d701748f0851/export/json",
                     "csv": "https://api.bankstatemently.com/v1/documents/d290f1ee-6c54-4b01-90e6-d701748f0851/export/csv",
@@ -734,24 +728,13 @@
               }
             }
           },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
           "404": {
             "description": "Document not found.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "error": {
-                    "type": "invalid_request_error",
-                    "code": "document_not_found",
-                    "message": "Document not found.",
-                    "request_id": "req_9xQr5tVwY3b6dE2f"
-                  }
-                }
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" },
+                "example": { "error": { "type": "invalid_request_error", "code": "document_not_found", "message": "Document not found.", "request_id": "req_9xQr5tVwY3b6dE2f" } }
               }
             }
           },
@@ -759,29 +742,13 @@
             "description": "Document processing not yet completed.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "error": {
-                    "type": "invalid_request_error",
-                    "code": "document_not_ready",
-                    "message": "Document is not ready (status: processing). Poll GET /v1/documents/{id} until status is \"completed\".",
-                    "meta": {
-                      "status": "processing"
-                    },
-                    "request_id": "req_3cGi7jKlN1b5eF2g"
-                  }
-                }
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" },
+                "example": { "error": { "type": "invalid_request_error", "code": "document_not_ready", "message": "Document is not ready (status: processing). Poll GET /v1/documents/{id} until status is \"completed\".", "meta": { "status": "processing" }, "request_id": "req_3cGi7jKlN1b5eF2g" } }
               }
             }
           },
-          "429": {
-            "$ref": "#/components/responses/RateLimited"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalError"
-          }
+          "429": { "$ref": "#/components/responses/RateLimited" },
+          "500": { "$ref": "#/components/responses/InternalError" }
         }
       }
     },
@@ -790,9 +757,7 @@
         "operationId": "exportDocument",
         "summary": "Download converted document",
         "description": "Download the processed document in the specified format. The document must have status `completed`. Rate limit: 30 requests per minute.",
-        "tags": [
-          "Exports"
-        ],
+        "tags": ["Exports"],
         "parameters": [
           {
             "name": "id",
@@ -814,12 +779,12 @@
             }
           },
           {
-            "name": "flavor",
+            "name": "dataMode",
             "in": "query",
             "required": false,
-            "description": "The data flavor to export. `original` returns raw extracted data; `enhanced` (default) includes AI-enriched fields; `normalized` applies standardized formatting.",
+            "description": "The data mode to export. `original` returns raw extracted data; `enhanced` (default) includes AI-enriched fields; `normalized` applies standardized formatting.",
             "schema": {
-              "$ref": "#/components/schemas/ExportFlavor"
+              "$ref": "#/components/schemas/ExportDataMode"
             }
           },
           {
@@ -829,11 +794,7 @@
             "description": "Date format string for Xero CSV exports (e.g., `DD/MM/YYYY`). Only applicable when format is `xero`.",
             "schema": {
               "type": "string",
-              "enum": [
-                "DD/MM/YYYY",
-                "MM/DD/YYYY",
-                "YYYY/MM/DD"
-              ]
+              "enum": ["DD/MM/YYYY", "MM/DD/YYYY", "YYYY/MM/DD"]
             }
           }
         ],
@@ -886,8 +847,8 @@
                         {
                           "date": "2026-01-05",
                           "description": "GIRO PAYMENT",
-                          "amount": -150,
-                          "balance": 4850
+                          "amount": -150.00,
+                          "balance": 4850.00
                         }
                       ]
                     }
@@ -916,7 +877,7 @@
             }
           },
           "400": {
-            "description": "Invalid request parameters (e.g., invalid flavor).",
+            "description": "Invalid request parameters (e.g., invalid dataMode).",
             "content": {
               "application/json": {
                 "schema": {
@@ -925,8 +886,8 @@
                 "example": {
                   "error": {
                     "type": "invalid_request_error",
-                    "code": "invalid_export_flavor",
-                    "message": "Invalid flavor. Use \"original\", \"enhanced\", or \"normalized\".",
+                    "code": "invalid_export_data_mode",
+                    "message": "Invalid dataMode. Use \"original\", \"enhanced\", or \"normalized\".",
                     "request_id": "req_4kLm8nOpR1c5fG3h"
                   }
                 }
@@ -935,6 +896,15 @@
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
+          },
+          "409": {
+            "description": "Document processing not yet completed.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" },
+                "example": { "error": { "type": "invalid_request_error", "code": "document_not_ready", "message": "Document is not ready for export (status: processing). Poll GET /v1/documents/{id} until status is \"completed\".", "meta": { "status": "processing" }, "request_id": "req_5mNo9pQrS2d6gH4i" } }
+              }
+            }
           },
           "404": {
             "description": "Document or completed processing run not found.",
@@ -949,27 +919,6 @@
                     "code": "document_not_found",
                     "message": "Document not found.",
                     "request_id": "req_2bHj6kMnQ0a4cD9e"
-                  }
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Document processing not yet completed.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "error": {
-                    "type": "invalid_request_error",
-                    "code": "document_not_ready",
-                    "message": "Document is not ready for export (status: processing). Poll GET /v1/documents/{id} until status is \"completed\".",
-                    "meta": {
-                      "status": "processing"
-                    },
-                    "request_id": "req_5mNo9pQrS2d6gH4i"
                   }
                 }
               }
@@ -1007,9 +956,7 @@
         "operationId": "unlockDocument",
         "summary": "Unlock a password-protected document",
         "description": "Submit a password to unlock and process a password-protected PDF. The document must have status `password_required`. On success, the document transitions to `processing` status. Rate limit: 20 requests per minute.",
-        "tags": [
-          "Documents"
-        ],
+        "tags": ["Documents"],
         "parameters": [
           {
             "name": "id",
@@ -1028,9 +975,7 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "password"
-                ],
+                "required": ["password"],
                 "properties": {
                   "password": {
                     "type": "string",
@@ -1180,9 +1125,7 @@
         "operationId": "categorizeDocument",
         "summary": "Categorize transactions",
         "description": "Categorize a document's transactions using AI. Returns cached categories if already generated (no credit charge). Otherwise deducts 1 credit and runs LLM-based categorization. Rate limit: 20 requests per minute.",
-        "tags": [
-          "Documents"
-        ],
+        "tags": ["Documents"],
         "parameters": [
           {
             "name": "id",
@@ -1245,10 +1188,10 @@
                           },
                           "description": "Map of transaction sequence number to category ID.",
                           "example": {
-                            "1": "groceries",
-                            "2": "dining",
+                            "1": "groceries_personal",
+                            "2": "meals_entertainment",
                             "3": "transfers",
-                            "4": "bills_utilities"
+                            "4": "utilities_telecom"
                           }
                         }
                       }
@@ -1265,11 +1208,11 @@
                       "totalTransactions": 42
                     },
                     "mappings": {
-                      "1": "groceries",
-                      "2": "dining",
+                      "1": "groceries_personal",
+                      "2": "meals_entertainment",
                       "3": "transfers",
-                      "4": "bills_utilities",
-                      "5": "shopping"
+                      "4": "utilities_telecom",
+                      "5": "supplies_equipment"
                     }
                   }
                 }
@@ -1354,9 +1297,7 @@
         "operationId": "getCredits",
         "summary": "Get credit balance",
         "description": "Returns the current credit balance for the authenticated user. Recommended: call this before large uploads to ensure sufficient credits. 1 credit = 1 page. Rate limit: 120 requests per minute.",
-        "tags": [
-          "Credits"
-        ],
+        "tags": ["Credits"],
         "responses": {
           "200": {
             "description": "Current credit balance.",
@@ -1376,12 +1317,7 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "required": [
-                    "balance",
-                    "limit",
-                    "planId",
-                    "creditsExpireAt"
-                  ],
+                  "required": ["balance", "limit", "planId", "creditsExpireAt"],
                   "properties": {
                     "balance": {
                       "type": "integer",
@@ -1389,25 +1325,18 @@
                       "example": 47
                     },
                     "limit": {
-                      "type": "integer",
-                      "description": "Plan allowance. 10 for free, plan-specific for paid.",
+                      "type": ["integer", "null"],
+                      "description": "Plan allowance. 10 for free, plan-specific for paid. null when the plan has no monthly allowance (e.g. enterprise).",
                       "example": 100
                     },
                     "planId": {
                       "type": "string",
                       "description": "Current plan identifier.",
-                      "enum": [
-                        "free",
-                        "pro",
-                        "business"
-                      ],
+                      "enum": ["free", "pro", "business"],
                       "example": "pro"
                     },
                     "creditsExpireAt": {
-                      "type": [
-                        "string",
-                        "null"
-                      ],
+                      "type": ["string", "null"],
                       "format": "date-time",
                       "description": "When current plan credits reset, or null for plans without expiry.",
                       "example": "2026-04-01T00:00:00.000Z"
@@ -1422,6 +1351,132 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/benchmark/evaluate": {
+      "post": {
+        "operationId": "evaluateBenchmark",
+        "summary": "Evaluate parsed transactions against benchmark ground truth",
+        "description": "Submit parsed transactions from a [Bank Statement Parsing Benchmark](https://github.com/bankstatemently/bank-statement-parsing-benchmark) PDF for scoring. The `contentHash` is the SHA-256 hex digest of the PDF you parsed — this ties the evaluation to the exact file. Free to use, no credits consumed. Rate limit: 50 requests per hour.",
+        "tags": ["Benchmark"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["contentHash", "transactions"],
+                "properties": {
+                  "contentHash": {
+                    "type": "string",
+                    "description": "SHA-256 hex digest of the benchmark PDF file.",
+                    "pattern": "^[a-f0-9]{64}$",
+                    "minLength": 64,
+                    "maxLength": 64,
+                    "example": "ba92a4b40c7a259f1e3d4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d"
+                  },
+                  "transactions": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 2000,
+                    "description": "Parsed transactions from the benchmark statement (max 2000).",
+                    "items": {
+                      "$ref": "#/components/schemas/BenchmarkTransaction"
+                    }
+                  }
+                }
+              },
+              "example": {
+                "contentHash": "ba92a4b40c7a259f1e3d4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d",
+                "transactions": [
+                  {
+                    "date": "2025-06-02",
+                    "description": "NTUC FAIRPRICE",
+                    "amount": 12.20,
+                    "direction": "debit",
+                    "balance": 15438.55,
+                    "originalData": {
+                      "Date": "02/06/2025",
+                      "Description": "NTUC FAIRPRICE",
+                      "Withdrawal (-)": "12.20",
+                      "Balance": "15,438.55"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Evaluation results with both normalized and parsed scores.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BenchmarkEvaluationResult"
+                },
+                "example": {
+                  "contentHash": "ba92a4b40c7a259f1e3d4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d",
+                  "id": "bsb-001",
+                  "datasetVersion": "2.0",
+                  "difficulty": "basic",
+                  "challenges": ["credit-debit-columns", "balance-validation", "multi-line-descriptions"],
+                  "normalizedScore": {
+                    "overall": 0.94,
+                    "extraction": 0.97,
+                    "integrity": 0.97,
+                    "fields": {
+                      "date": 0.98,
+                      "description": 0.91,
+                      "amount": 0.95
+                    },
+                    "alignment": {
+                      "matched": 11,
+                      "missing": 1,
+                      "extra": 0,
+                      "total": 12
+                    }
+                  },
+                  "parsedScore": {
+                    "overall": 0.95,
+                    "extraction": 0.98,
+                    "integrity": 0.97,
+                    "fields": {
+                      "Date": 1.00,
+                      "Description": 0.95,
+                      "Withdrawal (-)": 1.00,
+                      "Deposit (+)": 1.00,
+                      "Balance": 0.94
+                    },
+                    "alignment": {
+                      "matched": 11,
+                      "missing": 1,
+                      "extra": 0,
+                      "total": 12
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequest"
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
@@ -1458,9 +1513,7 @@
         "description": "The API version used to process this request. Always `1` for v1 endpoints.",
         "schema": {
           "type": "string",
-          "enum": [
-            "1"
-          ]
+          "enum": ["1"]
         },
         "example": "1"
       },
@@ -1468,9 +1521,7 @@
         "description": "Present and set to `true` when the response was served from the idempotency cache rather than reprocessed.",
         "schema": {
           "type": "string",
-          "enum": [
-            "true"
-          ]
+          "enum": ["true"]
         }
       },
       "Retry-After": {
@@ -1505,34 +1556,19 @@
     "schemas": {
       "DocumentStatus": {
         "type": "string",
-        "enum": [
-          "processing",
-          "completed",
-          "failed",
-          "password_required"
-        ],
+        "enum": ["processing", "completed", "failed", "password_required"],
         "description": "The processing status of a document."
       },
       "ExportFormat": {
         "type": "string",
-        "enum": [
-          "json",
-          "csv",
-          "xlsx",
-          "qbo",
-          "xero"
-        ],
+        "enum": ["json", "csv", "xlsx", "qbo", "xero"],
         "description": "Supported export formats."
       },
-      "ExportFlavor": {
+      "ExportDataMode": {
         "type": "string",
-        "enum": [
-          "original",
-          "enhanced",
-          "normalized"
-        ],
+        "enum": ["original", "enhanced", "normalized"],
         "default": "enhanced",
-        "description": "The data flavor to export. `original` returns raw extracted data; `enhanced` (default) includes AI-enriched fields; `normalized` applies standardized formatting."
+        "description": "The data mode to export. `original` returns raw extracted data; `enhanced` (default) includes AI-enriched fields; `normalized` applies standardized formatting."
       },
       "ApiErrorType": {
         "type": "string",
@@ -1551,12 +1587,13 @@
           "invalid_api_key",
           "key_revoked",
           "key_expired",
+          "invalid_export_token",
           "missing_file",
           "invalid_file_type",
           "encrypted_pdf",
           "invalid_pdf",
           "invalid_parameters",
-          "invalid_export_flavor",
+          "invalid_export_data_mode",
           "endpoint_not_found",
           "document_not_found",
           "document_not_ready",
@@ -1573,18 +1610,11 @@
       },
       "ErrorResponse": {
         "type": "object",
-        "required": [
-          "error"
-        ],
+        "required": ["error"],
         "properties": {
           "error": {
             "type": "object",
-            "required": [
-              "type",
-              "code",
-              "message",
-              "request_id"
-            ],
+            "required": ["type", "code", "message", "request_id"],
             "properties": {
               "type": {
                 "$ref": "#/components/schemas/ApiErrorType"
@@ -1635,21 +1665,12 @@
             "format": "uri"
           }
         },
-        "required": [
-          "json",
-          "csv",
-          "xlsx",
-          "qbo",
-          "xero"
-        ]
+        "required": ["json", "csv", "xlsx", "qbo", "xero"]
       },
       "StatementPeriod": {
         "type": "object",
         "description": "The date range covered by a single statement within the document.",
-        "required": [
-          "from",
-          "to"
-        ],
+        "required": ["from", "to"],
         "properties": {
           "from": {
             "type": "string",
@@ -1666,9 +1687,7 @@
       "StatementSummary": {
         "type": "object",
         "description": "Summary of a single bank statement found within the uploaded document.",
-        "required": [
-          "index"
-        ],
+        "required": ["index"],
         "properties": {
           "index": {
             "type": "integer",
@@ -1687,10 +1706,7 @@
             "description": "The date range of the statement, or null if not detected."
           },
           "transactionCount": {
-            "type": [
-              "integer",
-              "null"
-            ],
+            "type": ["integer", "null"],
             "minimum": 0,
             "description": "Number of transactions in this statement, or null if not yet counted."
           }
@@ -1701,38 +1717,23 @@
         "description": "Metadata about the uploaded document, populated once processing completes.",
         "properties": {
           "bank": {
-            "type": [
-              "string",
-              "null"
-            ],
+            "type": ["string", "null"],
             "description": "Detected bank or financial institution name."
           },
           "country": {
-            "type": [
-              "string",
-              "null"
-            ],
+            "type": ["string", "null"],
             "description": "Detected country code (ISO 3166-1 alpha-2)."
           },
           "currency": {
-            "type": [
-              "string",
-              "null"
-            ],
+            "type": ["string", "null"],
             "description": "Detected currency code (ISO 4217)."
           },
           "documentType": {
-            "type": [
-              "string",
-              "null"
-            ],
+            "type": ["string", "null"],
             "description": "Detected document type (e.g., `bank-statement`, `credit-card-statement`)."
           },
           "pageCount": {
-            "type": [
-              "integer",
-              "null"
-            ],
+            "type": ["integer", "null"],
             "minimum": 1,
             "description": "Number of pages in the uploaded PDF."
           },
@@ -1751,14 +1752,7 @@
       "StatementUploadResponse": {
         "type": "object",
         "description": "Response returned when a PDF is successfully accepted for processing.",
-        "required": [
-          "id",
-          "status",
-          "contentHash",
-          "createdAt",
-          "statements",
-          "links"
-        ],
+        "required": ["id", "status", "contentHash", "createdAt", "statements", "links"],
         "properties": {
           "id": {
             "type": "string",
@@ -1786,9 +1780,7 @@
           },
           "links": {
             "type": "object",
-            "required": [
-              "self"
-            ],
+            "required": ["self"],
             "properties": {
               "self": {
                 "type": "string",
@@ -1807,15 +1799,7 @@
       "StatementDetailResponse": {
         "type": "object",
         "description": "Full document status including statement metadata and export URLs when completed.",
-        "required": [
-          "id",
-          "status",
-          "contentHash",
-          "createdAt",
-          "updatedAt",
-          "statements",
-          "links"
-        ],
+        "required": ["id", "status", "contentHash", "createdAt", "updatedAt", "statements", "links"],
         "properties": {
           "id": {
             "type": "string",
@@ -1860,9 +1844,7 @@
           },
           "links": {
             "type": "object",
-            "required": [
-              "self"
-            ],
+            "required": ["self"],
             "properties": {
               "self": {
                 "type": "string",
@@ -1886,13 +1868,7 @@
       "StatementListItem": {
         "type": "object",
         "description": "A document summary as returned in the list endpoint.",
-        "required": [
-          "id",
-          "status",
-          "contentHash",
-          "createdAt",
-          "updatedAt"
-        ],
+        "required": ["id", "status", "contentHash", "createdAt", "updatedAt"],
         "properties": {
           "id": {
             "type": "string",
@@ -1907,25 +1883,16 @@
             "description": "Content-addressable hash of the uploaded file."
           },
           "filename": {
-            "type": [
-              "string",
-              "null"
-            ],
+            "type": ["string", "null"],
             "description": "Original filename of the uploaded PDF."
           },
           "pageCount": {
-            "type": [
-              "integer",
-              "null"
-            ],
+            "type": ["integer", "null"],
             "minimum": 1,
             "description": "Number of pages in the uploaded PDF."
           },
           "source": {
-            "type": [
-              "string",
-              "null"
-            ],
+            "type": ["string", "null"],
             "description": "How the document was uploaded (e.g., `api`, `web`)."
           },
           "createdAt": {
@@ -1947,12 +1914,7 @@
       "Pagination": {
         "type": "object",
         "description": "Pagination metadata for list responses.",
-        "required": [
-          "total",
-          "limit",
-          "offset",
-          "hasMore"
-        ],
+        "required": ["total", "limit", "offset", "hasMore"],
         "properties": {
           "total": {
             "type": "integer",
@@ -1979,10 +1941,7 @@
       "StatementListResponse": {
         "type": "object",
         "description": "Paginated list of documents.",
-        "required": [
-          "data",
-          "pagination"
-        ],
+        "required": ["data", "pagination"],
         "properties": {
           "data": {
             "type": "array",
@@ -1992,6 +1951,148 @@
           },
           "pagination": {
             "$ref": "#/components/schemas/Pagination"
+          }
+        }
+      },
+      "BenchmarkTransaction": {
+        "type": "object",
+        "required": ["date", "description", "amount", "originalData"],
+        "properties": {
+          "date": {
+            "type": "string",
+            "description": "ISO 8601 date (YYYY-MM-DD).",
+            "example": "2025-06-02"
+          },
+          "description": {
+            "type": "string",
+            "description": "Transaction description.",
+            "example": "NTUC FAIRPRICE"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Transaction amount. Positive absolute value, or negative to indicate debit. When direction is also provided, positive amounts are treated as absolute values.",
+            "example": 12.20
+          },
+          "direction": {
+            "type": "string",
+            "enum": ["credit", "debit"],
+            "description": "Explicit direction. If omitted, inferred from amount sign (negative = debit, positive/zero = credit). Negative amount with direction \"credit\" is rejected as contradictory."
+          },
+          "balance": {
+            "type": "number",
+            "description": "Running balance after this transaction.",
+            "example": 15438.55
+          },
+          "currency": {
+            "type": "string",
+            "description": "ISO 4217 currency code. Defaults to statement currency.",
+            "example": "SGD"
+          },
+          "originalData": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Raw column values as they appear in the PDF.",
+            "example": {
+              "Date": "02/06/2025",
+              "Description": "NTUC FAIRPRICE",
+              "Withdrawal (-)": "12.20",
+              "Balance": "15,438.55"
+            }
+          }
+        }
+      },
+      "BenchmarkScoreDetail": {
+        "type": "object",
+        "properties": {
+          "overall": {
+            "type": "number",
+            "description": "Headline score: extraction × integrity (0-1).",
+            "example": 0.94
+          },
+          "extraction": {
+            "type": "number",
+            "description": "Weighted accuracy across all fields (0-1).",
+            "example": 0.97
+          },
+          "integrity": {
+            "type": "number",
+            "description": "Structural correctness: validation checks, row coverage, polarity accuracy (0-1).",
+            "example": 0.97
+          },
+          "fields": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            },
+            "description": "Per-field accuracy scores. Normalized uses canonical names (date, description, amount). Parsed uses original column headers from the PDF.",
+            "example": {
+              "date": 0.98,
+              "description": 0.91,
+              "amount": 0.95
+            }
+          },
+          "alignment": {
+            "type": "object",
+            "properties": {
+              "matched": {
+                "type": "integer",
+                "description": "Transactions matched between submission and ground truth."
+              },
+              "missing": {
+                "type": "integer",
+                "description": "Transactions in ground truth but not in submission."
+              },
+              "extra": {
+                "type": "integer",
+                "description": "Transactions in submission but not in ground truth."
+              },
+              "total": {
+                "type": "integer",
+                "description": "Total ground truth transactions."
+              }
+            }
+          }
+        }
+      },
+      "BenchmarkEvaluationResult": {
+        "type": "object",
+        "required": ["contentHash", "id", "datasetVersion", "difficulty", "challenges", "normalizedScore", "parsedScore"],
+        "properties": {
+          "contentHash": {
+            "type": "string",
+            "description": "Echo of the submitted content hash."
+          },
+          "id": {
+            "type": "string",
+            "description": "Statement ID (e.g. bsb-001).",
+            "example": "bsb-001"
+          },
+          "datasetVersion": {
+            "type": "string",
+            "description": "Ground truth dataset version.",
+            "example": "2.0"
+          },
+          "difficulty": {
+            "type": "string",
+            "enum": ["basic", "intermediate", "advanced"],
+            "description": "Statement difficulty tier."
+          },
+          "challenges": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Parsing challenges present in the statement."
+          },
+          "normalizedScore": {
+            "$ref": "#/components/schemas/BenchmarkScoreDetail",
+            "description": "Scores against canonical values (ISO dates, numeric amounts)."
+          },
+          "parsedScore": {
+            "$ref": "#/components/schemas/BenchmarkScoreDetail",
+            "description": "Scores against raw PDF cell values."
           }
         }
       }
@@ -2037,6 +2138,17 @@
                     "request_id": "req_1aEh5iLmP0c4dC8f"
                   }
                 }
+              },
+              "invalid_export_token": {
+                "summary": "Export download token is invalid, expired, or doesn't match this document (export endpoint only)",
+                "value": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_export_token",
+                    "message": "This download link has expired or is invalid. Ask your AI assistant for a fresh link, or sign in with an API key.",
+                    "request_id": "req_6nQr0sUwB3e8iK5j"
+                  }
+                }
               }
             }
           }
@@ -2065,9 +2177,7 @@
                 "type": "rate_limit_error",
                 "code": "rate_limit_exceeded",
                 "message": "Rate limit exceeded. Retry after 12 seconds.",
-                "meta": {
-                  "retry_after": 12
-                },
+                "meta": { "retry_after": 12 },
                 "request_id": "req_6dFj8kMnR2a3bE5g"
               }
             }
@@ -2142,6 +2252,10 @@
     {
       "name": "Credits",
       "description": "Check your credit balance and plan information."
+    },
+    {
+      "name": "Benchmark",
+      "description": "Evaluate parsed transactions against the Bankstatemently open benchmark for bank statement parsing."
     }
   ]
 }

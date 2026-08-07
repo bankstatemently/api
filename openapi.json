@@ -430,7 +430,8 @@
             "description": "The document UUID returned from the upload endpoint.",
             "schema": {
               "type": "string",
-              "format": "uuid"
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
             }
           }
         ],
@@ -598,7 +599,7 @@
             "in": "path",
             "required": true,
             "description": "The document UUID.",
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": { "type": "string", "format": "uuid", "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$" }
           },
           {
             "name": "raw",
@@ -766,7 +767,8 @@
             "description": "The document UUID.",
             "schema": {
               "type": "string",
-              "format": "uuid"
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
             }
           },
           {
@@ -965,7 +967,8 @@
             "description": "The document UUID returned from the upload endpoint.",
             "schema": {
               "type": "string",
-              "format": "uuid"
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
             }
           }
         ],
@@ -1134,7 +1137,8 @@
             "description": "Document UUID returned by the upload endpoint.",
             "schema": {
               "type": "string",
-              "format": "uuid"
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
             }
           }
         ],
@@ -1381,7 +1385,7 @@
                   "contentHash": {
                     "type": "string",
                     "description": "SHA-256 hex digest of the benchmark PDF file.",
-                    "pattern": "^[a-f0-9]{64}$",
+                    "pattern": "^[a-f0-9]+$",
                     "minLength": 64,
                     "maxLength": 64,
                     "example": "ba92a4b40c7a259f1e3d4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d"
@@ -1477,6 +1481,492 @@
           },
           "400": {
             "$ref": "#/components/responses/InvalidRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/documents/{id}/rating": {
+      "get": {
+        "operationId": "getDocumentRating",
+        "summary": "Read your own rating for a document",
+        "description": "Returns the caller's own stored rating for this document, or `data: null` if the caller has not rated it yet. Rate limit: 10 requests per minute.",
+        "tags": ["Documents"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Document UUID returned by the upload endpoint.",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The caller's own rating, or null.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "rating": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 5
+                            },
+                            "hasFeedback": {
+                              "type": "boolean",
+                              "description": "Whether structured or free-text feedback is stored for this rating."
+                            },
+                            "hasUseCase": {
+                              "type": "boolean",
+                              "description": "Whether use-case tags are stored for this rating."
+                            }
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "null when the caller has not rated this document."
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "rating": 4,
+                    "hasFeedback": false,
+                    "hasUseCase": true
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "Document not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "document_not_found",
+                    "message": "Document not found.",
+                    "request_id": "req_5fCh8jLn0pRt2vXz"
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      },
+      "put": {
+        "operationId": "putDocumentRating",
+        "summary": "Submit or update your rating for a document",
+        "description": "Submits (or updates) the caller's own 1-5 rating for a completed document. Changing the rating clears any previously-stored feedback for it (feedback is tied to the rating it was given for). Requires the caller's own document to be in `completed` status. Rate limit: 10 requests per minute.",
+        "tags": ["Documents"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Document UUID returned by the upload endpoint.",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["rating"],
+                "properties": {
+                  "rating": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5,
+                    "description": "1-5 star rating for this conversion."
+                  },
+                  "exportFormat": {
+                    "type": "string",
+                    "enum": ["csv", "xlsx", "qbo", "xero"]
+                  },
+                  "useCase": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": ["bookkeeping", "tax_preparation", "financial_analysis", "audit_compliance", "reconciliation", "personal_finance", "data_migration", "other"]
+                    },
+                    "description": "Tags describing what the converted data is used for."
+                  },
+                  "useCaseOther": {
+                    "type": "string",
+                    "maxLength": 500
+                  }
+                }
+              },
+              "example": {
+                "rating": 4
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Rating stored.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "rating": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 5
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "rating": 4
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid rating parameters.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameters",
+                    "message": "Invalid parameters: rating: Number must be less than or equal to 5.",
+                    "request_id": "req_5fCh8jLn0pRt2vXz"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "409": {
+            "description": "The caller's own document is not found or not yet `completed`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "document_not_ready",
+                    "message": "Document not found or not yet processed.",
+                    "request_id": "req_5fCh8jLn0pRt2vXz"
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/documents/{id}/rating/feedback": {
+      "patch": {
+        "operationId": "patchDocumentRatingFeedback",
+        "summary": "Submit structured feedback on your rating",
+        "description": "Adds structured feedback (categories and/or free text) to the caller's own existing rating. Only accepted when the caller's own rating is 3 or below. Rate limit: 10 requests per minute.",
+        "tags": ["Documents"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Document UUID returned by the upload endpoint.",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "At least one of `categories` or `feedback` is required.",
+                "properties": {
+                  "categories": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": ["missing_transactions", "incorrect_amounts", "export_issue", "wrong_dates", "formatting_issue", "other"]
+                    }
+                  },
+                  "feedback": {
+                    "type": "string",
+                    "maxLength": 1000
+                  }
+                }
+              },
+              "example": {
+                "categories": ["missing_transactions"],
+                "feedback": "Missed two rows near the end of the statement."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Feedback stored.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "categories": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "feedback": {
+                          "type": ["string", "null"]
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "categories": ["missing_transactions"],
+                    "feedback": "Missed two rows near the end of the statement."
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "At least one of categories or feedback is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameters",
+                    "message": "Invalid parameters: At least one category or feedback text is required.",
+                    "request_id": "req_5fCh8jLn0pRt2vXz"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "The caller has no rating of their own for this document yet.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "rating_not_found",
+                    "message": "Rating not found.",
+                    "request_id": "req_5fCh8jLn0pRt2vXz"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Feedback is only accepted for ratings of 3 or below.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "feedback_rating_too_high",
+                    "message": "Feedback is only accepted for ratings of 3 or below.",
+                    "request_id": "req_5fCh8jLn0pRt2vXz"
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/documents/{id}/rating/use-case": {
+      "patch": {
+        "operationId": "patchDocumentRatingUseCase",
+        "summary": "Submit use-case tags for your rating",
+        "description": "Adds or updates use-case tags on the caller's own existing rating. A silent no-op (still 200) if the caller has not rated this document yet — use-case is only captured once a rating exists. Rate limit: 10 requests per minute.",
+        "tags": ["Documents"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Document UUID returned by the upload endpoint.",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["useCase"],
+                "properties": {
+                  "useCase": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": ["bookkeeping", "tax_preparation", "financial_analysis", "audit_compliance", "reconciliation", "personal_finance", "data_migration", "other"]
+                    },
+                    "minItems": 1
+                  },
+                  "useCaseOther": {
+                    "type": "string",
+                    "maxLength": 500
+                  },
+                  "exportFormat": {
+                    "type": "string",
+                    "enum": ["csv", "xlsx", "qbo", "xero"]
+                  }
+                }
+              },
+              "example": {
+                "useCase": ["bookkeeping"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Use-case tags stored (or silently no-op'd if the caller has not rated this document yet).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "useCase": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "useCaseOther": {
+                          "type": ["string", "null"]
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "useCase": ["bookkeeping"],
+                    "useCaseOther": null
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid use-case parameters.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameters",
+                    "message": "Invalid parameters: useCase: Array must contain at least 1 element(s).",
+                    "request_id": "req_5fCh8jLn0pRt2vXz"
+                  }
+                }
+              }
+            }
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"

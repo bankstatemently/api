@@ -1,28 +1,7 @@
 {
-  "openapi": "3.1.0",
-  "info": {
-    "title": "Bankstatemently API",
-    "version": "1.0.0",
-    "description": "[Bankstatemently - PDF to CSV Bank Statement Converter](https://bankstatemently.com)\n\nConvert bank statement PDFs into structured data. Upload a PDF, poll for completion, then export as JSON, CSV, XLSX, QBO, or Xero-compatible formats.\n\nFull docs: [bankstatemently.com/developers/api](https://bankstatemently.com/developers/api)"
-  },
-  "servers": [
-    {
-      "url": "https://api.bankstatemently.com/v1",
-      "description": "Production"
-    }
-  ],
-  "security": [
-    {
-      "apiKey": []
-    }
-  ],
   "paths": {
     "/documents": {
       "post": {
-        "operationId": "uploadDocument",
-        "summary": "Upload a bank statement PDF",
-        "description": "Upload a PDF bank statement for conversion. The file is processed asynchronously. Poll the returned `id` via GET /v1/documents/{id} to check progress. Rate limit: 10 requests per minute. Alternatively, POST a JSON body `{ \"upload_id\": \"...\" }` referencing a token minted via POST /v1/upload-tokens, to convert a previously-PUT file by reference.",
-        "tags": ["Documents"],
         "parameters": [
           {
             "name": "Idempotency-Key",
@@ -69,24 +48,18 @@
             "description": "Set to 'true' to reprocess a previously failed upload of the same file. Without this, re-uploading a failed file returns an already_processing error.",
             "schema": {
               "type": "string",
-              "enum": ["true"]
+              "enum": [
+                "true"
+              ]
             }
           }
         ],
         "requestBody": {
           "required": true,
           "content": {
-            "application/pdf": {
-              "schema": {
-                "type": "string",
-                "format": "binary",
-                "description": "The raw PDF bank statement bytes. Set Content-Type to application/pdf."
-              }
-            },
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["upload_id"],
                 "properties": {
                   "upload_id": {
                     "type": "string",
@@ -97,11 +70,27 @@
                     "format": "uri",
                     "description": "Webhook URL for processing completion notifications. Overrides the default webhook URL configured on the API key."
                   }
-                }
+                },
+                "required": [
+                  "upload_id"
+                ]
+              }
+            },
+            "application/pdf": {
+              "schema": {
+                "type": "string",
+                "format": "binary",
+                "description": "The raw PDF bank statement bytes. Set Content-Type to application/pdf."
               }
             }
           }
         },
+        "operationId": "uploadDocument",
+        "summary": "Upload a bank statement PDF",
+        "description": "Upload a PDF bank statement for conversion. The file is processed asynchronously. Poll the returned `id` via GET /v1/documents/{id} to check progress. Rate limit: 10 requests per minute. Alternatively, POST a JSON body `{ \"upload_id\": \"...\" }` referencing a token minted via POST /v1/upload-tokens, to convert a previously-PUT file by reference.",
+        "tags": [
+          "Documents"
+        ],
         "responses": {
           "202": {
             "description": "Upload accepted. Processing has started, or the PDF requires a password.",
@@ -210,7 +199,14 @@
                         "type": "invalid_request_error",
                         "code": "invalid_parameters",
                         "message": "Invalid webhook_url: Webhook URL must use HTTPS.",
-                        "meta": { "fields": [{ "field": "webhook_url", "message": "Webhook URL must use HTTPS." }] },
+                        "meta": {
+                          "fields": [
+                            {
+                              "field": "webhook_url",
+                              "message": "Webhook URL must use HTTPS."
+                            }
+                          ]
+                        },
                         "request_id": "req_8hLn2pTvX6i0jK4m"
                       }
                     }
@@ -237,7 +233,10 @@
                         "type": "quota_exceeded",
                         "code": "insufficient_credits",
                         "message": "Insufficient credits. This file requires 3 credit(s) but you have 1 remaining. Purchase more at https://bankstatemently.com/pricing.",
-                        "meta": { "credits_required": 3, "credits_remaining": 1 },
+                        "meta": {
+                          "credits_required": 3,
+                          "credits_remaining": 1
+                        },
                         "request_id": "req_8zAb2cDe4fGh6iJk"
                       }
                     }
@@ -249,7 +248,10 @@
                         "type": "quota_exceeded",
                         "code": "page_limit_exceeded",
                         "message": "Page limit exceeded. This file has 25 pages but your plan allows 10. Upgrade at https://bankstatemently.com/pricing.",
-                        "meta": { "page_count": 25, "page_limit": 10 },
+                        "meta": {
+                          "page_count": 25,
+                          "page_limit": 10
+                        },
                         "request_id": "req_0bDf4hJlN8c2eG6i"
                       }
                     }
@@ -261,7 +263,9 @@
                         "type": "quota_exceeded",
                         "code": "file_too_large",
                         "message": "File too large. Your plan allows files up to 10 MB. Upgrade at https://bankstatemently.com/pricing.",
-                        "meta": { "max_size_mb": 10 },
+                        "meta": {
+                          "max_size_mb": 10
+                        },
                         "request_id": "req_2dFh6jLnR0e4gI8k"
                       }
                     }
@@ -318,10 +322,6 @@
         }
       },
       "get": {
-        "operationId": "listDocuments",
-        "summary": "List recent documents",
-        "description": "Retrieve a paginated list of your uploaded documents, ordered by creation date descending. Rate limit: 120 requests per minute.",
-        "tags": ["Documents"],
         "parameters": [
           {
             "name": "limit",
@@ -355,6 +355,12 @@
               "$ref": "#/components/schemas/DocumentStatus"
             }
           }
+        ],
+        "operationId": "listDocuments",
+        "summary": "List recent documents",
+        "description": "Retrieve a paginated list of your uploaded documents, ordered by creation date descending. Rate limit: 120 requests per minute.",
+        "tags": [
+          "Documents"
         ],
         "responses": {
           "200": {
@@ -438,7 +444,9 @@
         "operationId": "mintUploadToken",
         "summary": "Mint a single-use upload token",
         "description": "Mints a single-use, expiring upload token for hosts with no direct byte-upload equivalent (e.g. an agent sandbox with outbound-only network access). PUT the PDF to the returned upload_url, then POST /v1/documents with `{ \"upload_id\": \"...\" }` to convert it by reference. Tokens expire after ~2 hours and are single-use — PUTting a second file overwrites the first, but converting consumes the token. No credit is deducted on mint; credits are charged only at conversion. Rate limit: 20 requests per minute.",
-        "tags": ["Documents"],
+        "tags": [
+          "Documents"
+        ],
         "responses": {
           "201": {
             "description": "Upload token minted.",
@@ -451,7 +459,12 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "required": ["upload_id", "upload_url", "expires_at", "max_bytes"],
+                  "required": [
+                    "upload_id",
+                    "upload_url",
+                    "expires_at",
+                    "max_bytes"
+                  ],
                   "properties": {
                     "upload_id": {
                       "type": "string",
@@ -496,10 +509,6 @@
     },
     "/documents/{id}": {
       "get": {
-        "operationId": "getDocument",
-        "summary": "Get document processing status",
-        "description": "Poll the status of an uploaded document. When status is `completed`, the response includes statement metadata and export URLs. Rate limit: 120 requests per minute.",
-        "tags": ["Documents"],
         "parameters": [
           {
             "name": "id",
@@ -512,6 +521,12 @@
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
             }
           }
+        ],
+        "operationId": "getDocument",
+        "summary": "Get document processing status",
+        "description": "Poll the status of an uploaded document. When status is `completed`, the response includes statement metadata and export URLs. Rate limit: 120 requests per minute.",
+        "tags": [
+          "Documents"
         ],
         "responses": {
           "200": {
@@ -667,39 +682,57 @@
     },
     "/documents/{id}/data": {
       "get": {
-        "operationId": "getDocumentData",
-        "summary": "Get structured document data",
-        "description": "Retrieve structured document data including accounts and transactions. Only available when document status is `completed`. Transactions are paginated. Rate limit: 60 requests per minute.",
-        "tags": ["Documents"],
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
             "description": "The document UUID.",
-            "schema": { "type": "string", "format": "uuid", "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$" }
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
           },
           {
             "name": "raw",
             "in": "query",
             "required": false,
             "description": "Set to `true` to include `originalData` (raw pre-normalization cell values) on each transaction. When enabled, max limit is reduced to 500.",
-            "schema": { "type": "boolean", "default": false }
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
           },
           {
             "name": "limit",
             "in": "query",
             "required": false,
             "description": "Maximum number of transactions per page.",
-            "schema": { "type": "integer", "minimum": 1, "maximum": 2000, "default": 500 }
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2000,
+              "default": 500
+            }
           },
           {
             "name": "offset",
             "in": "query",
             "required": false,
             "description": "Number of transactions to skip for pagination.",
-            "schema": { "type": "integer", "minimum": 0, "default": 0 }
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
           }
+        ],
+        "operationId": "getDocumentData",
+        "summary": "Get structured document data",
+        "description": "Retrieve structured document data including accounts and transactions. Only available when document status is `completed`. Transactions are paginated. Rate limit: 60 requests per minute.",
+        "tags": [
+          "Documents"
         ],
         "responses": {
           "200": {
@@ -718,21 +751,38 @@
                     "bankId": "dbs-bank-ltd",
                     "country": "SG",
                     "currency": "SGD",
-                    "languages": ["en"],
+                    "languages": [
+                      "en"
+                    ],
                     "pageCount": 3,
                     "statementDate": "2026-01-31",
-                    "statementPeriod": { "from": "2026-01-01", "to": "2026-01-31" },
+                    "statementPeriod": {
+                      "from": "2026-01-01",
+                      "to": "2026-01-31"
+                    },
                     "statements": [
                       {
                         "date": "2026-01-31",
-                        "period": { "from": "2026-01-01", "to": "2026-01-31" },
+                        "period": {
+                          "from": "2026-01-01",
+                          "to": "2026-01-31"
+                        },
                         "products": [
                           {
                             "productId": null,
                             "productName": null,
                             "currency": "SGD",
                             "declared": [
-                              { "payload": { "kind": "balance:closing", "amount": 4250.75, "currency": "SGD" }, "ownership": { "level": "product" } }
+                              {
+                                "payload": {
+                                  "kind": "balance:closing",
+                                  "amount": 4250.75,
+                                  "currency": "SGD"
+                                },
+                                "ownership": {
+                                  "level": "product"
+                                }
+                              }
                             ],
                             "categories": [],
                             "accounts": [
@@ -742,10 +792,52 @@
                                 "accountHolderName": "John Doe",
                                 "currency": "SGD",
                                 "declared": [
-                                  { "payload": { "kind": "balance:opening", "amount": 5000.00, "currency": "SGD" }, "ownership": { "level": "account" } },
-                                  { "payload": { "kind": "balance:closing", "amount": 4250.75, "currency": "SGD" }, "ownership": { "level": "account" } },
-                                  { "payload": { "kind": "total", "amount": 1200.00, "currency": "SGD" }, "ownership": { "level": "account" }, "slice": { "direction": "credit" } },
-                                  { "payload": { "kind": "total", "amount": 1949.25, "currency": "SGD" }, "ownership": { "level": "account" }, "slice": { "direction": "debit" } }
+                                  {
+                                    "payload": {
+                                      "kind": "balance:opening",
+                                      "amount": 5000,
+                                      "currency": "SGD"
+                                    },
+                                    "ownership": {
+                                      "level": "account"
+                                    }
+                                  },
+                                  {
+                                    "payload": {
+                                      "kind": "balance:closing",
+                                      "amount": 4250.75,
+                                      "currency": "SGD"
+                                    },
+                                    "ownership": {
+                                      "level": "account"
+                                    }
+                                  },
+                                  {
+                                    "payload": {
+                                      "kind": "total",
+                                      "amount": 1200,
+                                      "currency": "SGD"
+                                    },
+                                    "ownership": {
+                                      "level": "account"
+                                    },
+                                    "slice": {
+                                      "direction": "credit"
+                                    }
+                                  },
+                                  {
+                                    "payload": {
+                                      "kind": "total",
+                                      "amount": 1949.25,
+                                      "currency": "SGD"
+                                    },
+                                    "ownership": {
+                                      "level": "account"
+                                    },
+                                    "slice": {
+                                      "direction": "debit"
+                                    }
+                                  }
                                 ],
                                 "categories": [],
                                 "transactions": [
@@ -756,7 +848,7 @@
                                     "amount": 1200,
                                     "direction": "credit",
                                     "currency": "SGD",
-                                    "balance": 6200.00,
+                                    "balance": 6200,
                                     "accountId": 0,
                                     "accountNumber": "XXX-X-XX1234"
                                   }
@@ -774,10 +866,33 @@
                       "accountNumber": "XXX-X-XX1234",
                       "accountHolderName": "John Doe",
                       "currency": "SGD",
-                      "totals": { "openingBalance": 5000.00, "closingBalance": 4250.75, "totalCredits": 1200.00, "totalDebits": 1949.25 },
+                      "totals": {
+                        "openingBalance": 5000,
+                        "closingBalance": 4250.75,
+                        "totalCredits": 1200,
+                        "totalDebits": 1949.25
+                      },
                       "declared": [
-                        { "payload": { "kind": "balance:opening", "amount": 5000.00, "currency": "SGD" }, "ownership": { "level": "account" } },
-                        { "payload": { "kind": "balance:closing", "amount": 4250.75, "currency": "SGD" }, "ownership": { "level": "account" } }
+                        {
+                          "payload": {
+                            "kind": "balance:opening",
+                            "amount": 5000,
+                            "currency": "SGD"
+                          },
+                          "ownership": {
+                            "level": "account"
+                          }
+                        },
+                        {
+                          "payload": {
+                            "kind": "balance:closing",
+                            "amount": 4250.75,
+                            "currency": "SGD"
+                          },
+                          "ownership": {
+                            "level": "account"
+                          }
+                        }
                       ],
                       "categories": []
                     }
@@ -790,12 +905,17 @@
                       "amount": 1200,
                       "direction": "credit",
                       "currency": "SGD",
-                      "balance": 6200.00,
+                      "balance": 6200,
                       "accountId": 0,
                       "accountNumber": "XXX-X-XX1234"
                     }
                   ],
-                  "pagination": { "total": 47, "limit": 500, "offset": 0, "hasMore": false },
+                  "pagination": {
+                    "total": 47,
+                    "limit": 500,
+                    "offset": 0,
+                    "hasMore": false
+                  },
                   "exports": {
                     "json": "https://api.bankstatemently.com/v1/documents/d290f1ee-6c54-4b01-90e6-d701748f0851/export/json",
                     "csv": "https://api.bankstatemently.com/v1/documents/d290f1ee-6c54-4b01-90e6-d701748f0851/export/csv",
@@ -807,13 +927,24 @@
               }
             }
           },
-          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
           "404": {
             "description": "Document not found.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" },
-                "example": { "error": { "type": "invalid_request_error", "code": "document_not_found", "message": "Document not found.", "request_id": "req_9xQr5tVwY3b6dE2f" } }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "document_not_found",
+                    "message": "Document not found.",
+                    "request_id": "req_9xQr5tVwY3b6dE2f"
+                  }
+                }
               }
             }
           },
@@ -821,22 +952,34 @@
             "description": "Document processing not yet completed.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" },
-                "example": { "error": { "type": "invalid_request_error", "code": "document_not_ready", "message": "Document is not ready (status: processing). Poll GET /v1/documents/{id} until status is \"completed\".", "meta": { "status": "processing" }, "request_id": "req_3cGi7jKlN1b5eF2g" } }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "document_not_ready",
+                    "message": "Document is not ready (status: processing). Poll GET /v1/documents/{id} until status is \"completed\".",
+                    "meta": {
+                      "status": "processing"
+                    },
+                    "request_id": "req_3cGi7jKlN1b5eF2g"
+                  }
+                }
               }
             }
           },
-          "429": { "$ref": "#/components/responses/RateLimited" },
-          "500": { "$ref": "#/components/responses/InternalError" }
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
         }
       }
     },
     "/documents/{id}/export/{format}": {
       "get": {
-        "operationId": "exportDocument",
-        "summary": "Download converted document",
-        "description": "Download the processed document in the specified format. The document must have status `completed`. Rate limit: 30 requests per minute.",
-        "tags": ["Exports"],
         "parameters": [
           {
             "name": "id",
@@ -874,9 +1017,19 @@
             "description": "Date format string for Xero CSV exports (e.g., `DD/MM/YYYY`). Only applicable when format is `xero`.",
             "schema": {
               "type": "string",
-              "enum": ["DD/MM/YYYY", "MM/DD/YYYY", "YYYY/MM/DD"]
+              "enum": [
+                "DD/MM/YYYY",
+                "MM/DD/YYYY",
+                "YYYY/MM/DD"
+              ]
             }
           }
+        ],
+        "operationId": "exportDocument",
+        "summary": "Download converted document",
+        "description": "Download the processed document in the specified format. The document must have status `completed`. Rate limit: 30 requests per minute.",
+        "tags": [
+          "Exports"
         ],
         "responses": {
           "200": {
@@ -927,8 +1080,8 @@
                         {
                           "date": "2026-01-05",
                           "description": "GIRO PAYMENT",
-                          "amount": -150.00,
-                          "balance": 4850.00
+                          "amount": -150,
+                          "balance": 4850
                         }
                       ]
                     }
@@ -977,15 +1130,6 @@
           "401": {
             "$ref": "#/components/responses/Unauthorized"
           },
-          "409": {
-            "description": "Document processing not yet completed.",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" },
-                "example": { "error": { "type": "invalid_request_error", "code": "document_not_ready", "message": "Document is not ready for export (status: processing). Poll GET /v1/documents/{id} until status is \"completed\".", "meta": { "status": "processing" }, "request_id": "req_5mNo9pQrS2d6gH4i" } }
-              }
-            }
-          },
           "404": {
             "description": "Document or completed processing run not found.",
             "content": {
@@ -999,6 +1143,27 @@
                     "code": "document_not_found",
                     "message": "Document not found.",
                     "request_id": "req_2bHj6kMnQ0a4cD9e"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Document processing not yet completed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "document_not_ready",
+                    "message": "Document is not ready for export (status: processing). Poll GET /v1/documents/{id} until status is \"completed\".",
+                    "meta": {
+                      "status": "processing"
+                    },
+                    "request_id": "req_5mNo9pQrS2d6gH4i"
                   }
                 }
               }
@@ -1033,10 +1198,6 @@
     },
     "/documents/{id}/unlock": {
       "post": {
-        "operationId": "unlockDocument",
-        "summary": "Unlock a password-protected document",
-        "description": "Submit a password to unlock and process a password-protected PDF. The document must have status `password_required`. On success, the document transitions to `processing` status. Rate limit: 20 requests per minute.",
-        "tags": ["Documents"],
         "parameters": [
           {
             "name": "id",
@@ -1056,7 +1217,6 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["password"],
                 "properties": {
                   "password": {
                     "type": "string",
@@ -1064,7 +1224,10 @@
                     "maxLength": 1000,
                     "description": "The password to unlock the PDF. Used in memory only for decryption and never stored."
                   }
-                }
+                },
+                "required": [
+                  "password"
+                ]
               },
               "example": {
                 "password": "my-pdf-password"
@@ -1072,6 +1235,12 @@
             }
           }
         },
+        "operationId": "unlockDocument",
+        "summary": "Unlock a password-protected document",
+        "description": "Submit a password to unlock and process a password-protected PDF. The document must have status `password_required`. On success, the document transitions to `processing` status. Rate limit: 20 requests per minute.",
+        "tags": [
+          "Documents"
+        ],
         "responses": {
           "200": {
             "description": "Password accepted. Document is now processing.",
@@ -1203,10 +1372,6 @@
     },
     "/documents/{id}/categorize": {
       "post": {
-        "operationId": "categorizeDocument",
-        "summary": "Categorize transactions",
-        "description": "Categorize a document's transactions using AI. Returns cached categories if already generated (no credit charge). Otherwise deducts 1 credit and runs LLM-based categorization. Rate limit: 20 requests per minute.",
-        "tags": ["Documents"],
         "parameters": [
           {
             "name": "id",
@@ -1219,6 +1384,12 @@
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
             }
           }
+        ],
+        "operationId": "categorizeDocument",
+        "summary": "Categorize transactions",
+        "description": "Categorize a document's transactions using AI. Returns cached categories if already generated (no credit charge). Otherwise deducts 1 credit and runs LLM-based categorization. Rate limit: 20 requests per minute.",
+        "tags": [
+          "Documents"
         ],
         "responses": {
           "200": {
@@ -1379,7 +1550,9 @@
         "operationId": "getCredits",
         "summary": "Get credit balance",
         "description": "Returns the current credit balance for the authenticated user. Recommended: call this before large uploads to ensure sufficient credits. 1 credit = 1 page. Rate limit: 120 requests per minute.",
-        "tags": ["Credits"],
+        "tags": [
+          "Credits"
+        ],
         "responses": {
           "200": {
             "description": "Current credit balance.",
@@ -1399,7 +1572,12 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "required": ["balance", "limit", "planId", "creditsExpireAt"],
+                  "required": [
+                    "balance",
+                    "limit",
+                    "planId",
+                    "creditsExpireAt"
+                  ],
                   "properties": {
                     "balance": {
                       "type": "integer",
@@ -1407,18 +1585,28 @@
                       "example": 47
                     },
                     "limit": {
-                      "type": ["integer", "null"],
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
                       "description": "Plan allowance. 10 for free, plan-specific for paid. null when the plan has no monthly allowance (e.g. enterprise).",
                       "example": 100
                     },
                     "planId": {
                       "type": "string",
                       "description": "Current plan identifier.",
-                      "enum": ["free", "pro", "business"],
+                      "enum": [
+                        "free",
+                        "pro",
+                        "business"
+                      ],
                       "example": "pro"
                     },
                     "creditsExpireAt": {
-                      "type": ["string", "null"],
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "format": "date-time",
                       "description": "When current plan credits reset, or null for plans without expiry.",
                       "example": "2026-04-01T00:00:00.000Z"
@@ -1448,36 +1636,65 @@
     },
     "/benchmark/evaluate": {
       "post": {
-        "operationId": "evaluateBenchmark",
-        "summary": "Evaluate parsed transactions against benchmark ground truth",
-        "description": "Submit parsed transactions from a [Bank Statement Parsing Benchmark](https://github.com/bankstatemently/bank-statement-parsing-benchmark) PDF for scoring. The `contentHash` is the SHA-256 hex digest of the PDF you parsed — this ties the evaluation to the exact file. Free to use, no credits consumed. Rate limit: 50 requests per hour.",
-        "tags": ["Benchmark"],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["contentHash", "transactions"],
                 "properties": {
                   "contentHash": {
                     "type": "string",
-                    "description": "SHA-256 hex digest of the benchmark PDF file.",
                     "pattern": "^[a-f0-9]+$",
                     "minLength": 64,
                     "maxLength": 64,
+                    "description": "SHA-256 hex digest of the benchmark PDF file.",
                     "example": "ba92a4b40c7a259f1e3d4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d"
+                  },
+                  "accounts": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Submission-internal handle, referenced by transactions[].accountId."
+                        },
+                        "accountNumber": {
+                          "type": "string",
+                          "description": "Verbatim printed account number — never normalized by the submitter."
+                        },
+                        "name": {
+                          "type": "string",
+                          "description": "Verbatim printed account label."
+                        },
+                        "currency": {
+                          "type": "string",
+                          "description": "ISO 4217 currency code."
+                        }
+                      },
+                      "required": [
+                        "id"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "description": "Optional account roster for multi-account statements. Each transaction references one via accountId."
                   },
                   "transactions": {
                     "type": "array",
                     "minItems": 1,
                     "maxItems": 2000,
-                    "description": "Parsed transactions from the benchmark statement (max 2000).",
                     "items": {
                       "$ref": "#/components/schemas/BenchmarkTransaction"
-                    }
+                    },
+                    "description": "Parsed transactions from the benchmark statement (max 2000)."
                   }
-                }
+                },
+                "required": [
+                  "contentHash",
+                  "transactions"
+                ]
               },
               "example": {
                 "contentHash": "ba92a4b40c7a259f1e3d4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d",
@@ -1485,7 +1702,7 @@
                   {
                     "date": "2025-06-02",
                     "description": "NTUC FAIRPRICE",
-                    "amount": 12.20,
+                    "amount": 12.2,
                     "direction": "debit",
                     "balance": 15438.55,
                     "originalData": {
@@ -1500,6 +1717,12 @@
             }
           }
         },
+        "operationId": "evaluateBenchmark",
+        "summary": "Evaluate parsed transactions against benchmark ground truth",
+        "description": "Submit parsed transactions from a [Bank Statement Parsing Benchmark](https://github.com/bankstatemently/bank-statement-parsing-benchmark) PDF for scoring. The `contentHash` is the SHA-256 hex digest of the PDF you parsed — this ties the evaluation to the exact file. Free to use, no credits consumed. Rate limit: 50 requests per hour.",
+        "tags": [
+          "Benchmark"
+        ],
         "responses": {
           "200": {
             "description": "Evaluation results with both normalized and parsed scores.",
@@ -1518,7 +1741,11 @@
                   "id": "bsb-001",
                   "datasetVersion": "2.0",
                   "difficulty": "basic",
-                  "challenges": ["credit-debit-columns", "balance-validation", "multi-line-descriptions"],
+                  "challenges": [
+                    "credit-debit-columns",
+                    "balance-validation",
+                    "multi-line-descriptions"
+                  ],
                   "normalizedScore": {
                     "overall": 0.94,
                     "extraction": 0.97,
@@ -1540,10 +1767,10 @@
                     "extraction": 0.98,
                     "integrity": 0.97,
                     "fields": {
-                      "Date": 1.00,
+                      "Date": 1,
                       "Description": 0.95,
-                      "Withdrawal (-)": 1.00,
-                      "Deposit (+)": 1.00,
+                      "Withdrawal (-)": 1,
+                      "Deposit (+)": 1,
                       "Balance": 0.94
                     },
                     "alignment": {
@@ -1574,10 +1801,6 @@
     },
     "/documents/{id}/rating": {
       "get": {
-        "operationId": "getDocumentRating",
-        "summary": "Read your own rating for a document",
-        "description": "Returns the caller's own stored rating for this document, or `data: null` if the caller has not rated it yet. Rate limit: 10 requests per minute.",
-        "tags": ["Documents"],
         "parameters": [
           {
             "name": "id",
@@ -1590,6 +1813,12 @@
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
             }
           }
+        ],
+        "operationId": "getDocumentRating",
+        "summary": "Read your own rating for a document",
+        "description": "Returns the caller's own stored rating for this document, or `data: null` if the caller has not rated it yet. Rate limit: 10 requests per minute.",
+        "tags": [
+          "Documents"
         ],
         "responses": {
           "200": {
@@ -1667,10 +1896,6 @@
         }
       },
       "put": {
-        "operationId": "putDocumentRating",
-        "summary": "Submit or update your rating for a document",
-        "description": "Submits (or updates) the caller's own 1-5 rating for a completed document. Changing the rating clears any previously-stored feedback for it (feedback is tied to the rating it was given for). Requires the caller's own document to be in `completed` status. Rate limit: 10 requests per minute.",
-        "tags": ["Documents"],
         "parameters": [
           {
             "name": "id",
@@ -1690,7 +1915,6 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["rating"],
                 "properties": {
                   "rating": {
                     "type": "integer",
@@ -1700,13 +1924,27 @@
                   },
                   "exportFormat": {
                     "type": "string",
-                    "enum": ["csv", "xlsx", "qbo", "xero"]
+                    "enum": [
+                      "csv",
+                      "xlsx",
+                      "qbo",
+                      "xero"
+                    ]
                   },
                   "useCase": {
                     "type": "array",
                     "items": {
                       "type": "string",
-                      "enum": ["bookkeeping", "tax_preparation", "financial_analysis", "audit_compliance", "reconciliation", "personal_finance", "data_migration", "other"]
+                      "enum": [
+                        "bookkeeping",
+                        "tax_preparation",
+                        "financial_analysis",
+                        "audit_compliance",
+                        "reconciliation",
+                        "personal_finance",
+                        "data_migration",
+                        "other"
+                      ]
                     },
                     "description": "Tags describing what the converted data is used for."
                   },
@@ -1714,7 +1952,10 @@
                     "type": "string",
                     "maxLength": 500
                   }
-                }
+                },
+                "required": [
+                  "rating"
+                ]
               },
               "example": {
                 "rating": 4
@@ -1722,6 +1963,12 @@
             }
           }
         },
+        "operationId": "putDocumentRating",
+        "summary": "Submit or update your rating for a document",
+        "description": "Submits (or updates) the caller's own 1-5 rating for a completed document. Changing the rating clears any previously-stored feedback for it (feedback is tied to the rating it was given for). Requires the caller's own document to be in `completed` status. Rate limit: 10 requests per minute.",
+        "tags": [
+          "Documents"
+        ],
         "responses": {
           "200": {
             "description": "Rating stored.",
@@ -1800,10 +2047,6 @@
     },
     "/documents/{id}/rating/feedback": {
       "patch": {
-        "operationId": "patchDocumentRatingFeedback",
-        "summary": "Submit structured feedback on your rating",
-        "description": "Adds structured feedback (categories and/or free text) to the caller's own existing rating. Only accepted when the caller's own rating is 3 or below. Rate limit: 10 requests per minute.",
-        "tags": ["Documents"],
         "parameters": [
           {
             "name": "id",
@@ -1823,28 +2066,43 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "description": "At least one of `categories` or `feedback` is required.",
                 "properties": {
                   "categories": {
                     "type": "array",
                     "items": {
                       "type": "string",
-                      "enum": ["missing_transactions", "incorrect_amounts", "export_issue", "wrong_dates", "formatting_issue", "other"]
+                      "enum": [
+                        "missing_transactions",
+                        "incorrect_amounts",
+                        "export_issue",
+                        "wrong_dates",
+                        "formatting_issue",
+                        "other"
+                      ]
                     }
                   },
                   "feedback": {
                     "type": "string",
                     "maxLength": 1000
                   }
-                }
+                },
+                "description": "At least one of `categories` or `feedback` is required."
               },
               "example": {
-                "categories": ["missing_transactions"],
+                "categories": [
+                  "missing_transactions"
+                ],
                 "feedback": "Missed two rows near the end of the statement."
               }
             }
           }
         },
+        "operationId": "patchDocumentRatingFeedback",
+        "summary": "Submit structured feedback on your rating",
+        "description": "Adds structured feedback (categories and/or free text) to the caller's own existing rating. Only accepted when the caller's own rating is 3 or below. Rate limit: 10 requests per minute.",
+        "tags": [
+          "Documents"
+        ],
         "responses": {
           "200": {
             "description": "Feedback stored.",
@@ -1863,7 +2121,10 @@
                           }
                         },
                         "feedback": {
-                          "type": ["string", "null"]
+                          "type": [
+                            "string",
+                            "null"
+                          ]
                         }
                       }
                     }
@@ -1871,7 +2132,9 @@
                 },
                 "example": {
                   "data": {
-                    "categories": ["missing_transactions"],
+                    "categories": [
+                      "missing_transactions"
+                    ],
                     "feedback": "Missed two rows near the end of the statement."
                   }
                 }
@@ -1946,10 +2209,6 @@
     },
     "/documents/{id}/rating/use-case": {
       "patch": {
-        "operationId": "patchDocumentRatingUseCase",
-        "summary": "Submit use-case tags for your rating",
-        "description": "Adds or updates use-case tags on the caller's own existing rating. A silent no-op (still 200) if the caller has not rated this document yet — use-case is only captured once a rating exists. Rate limit: 10 requests per minute.",
-        "tags": ["Documents"],
         "parameters": [
           {
             "name": "id",
@@ -1969,15 +2228,23 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["useCase"],
                 "properties": {
                   "useCase": {
                     "type": "array",
+                    "minItems": 1,
                     "items": {
                       "type": "string",
-                      "enum": ["bookkeeping", "tax_preparation", "financial_analysis", "audit_compliance", "reconciliation", "personal_finance", "data_migration", "other"]
-                    },
-                    "minItems": 1
+                      "enum": [
+                        "bookkeeping",
+                        "tax_preparation",
+                        "financial_analysis",
+                        "audit_compliance",
+                        "reconciliation",
+                        "personal_finance",
+                        "data_migration",
+                        "other"
+                      ]
+                    }
                   },
                   "useCaseOther": {
                     "type": "string",
@@ -1985,16 +2252,32 @@
                   },
                   "exportFormat": {
                     "type": "string",
-                    "enum": ["csv", "xlsx", "qbo", "xero"]
+                    "enum": [
+                      "csv",
+                      "xlsx",
+                      "qbo",
+                      "xero"
+                    ]
                   }
-                }
+                },
+                "required": [
+                  "useCase"
+                ]
               },
               "example": {
-                "useCase": ["bookkeeping"]
+                "useCase": [
+                  "bookkeeping"
+                ]
               }
             }
           }
         },
+        "operationId": "patchDocumentRatingUseCase",
+        "summary": "Submit use-case tags for your rating",
+        "description": "Adds or updates use-case tags on the caller's own existing rating. A silent no-op (still 200) if the caller has not rated this document yet — use-case is only captured once a rating exists. Rate limit: 10 requests per minute.",
+        "tags": [
+          "Documents"
+        ],
         "responses": {
           "200": {
             "description": "Use-case tags stored (or silently no-op'd if the caller has not rated this document yet).",
@@ -2013,7 +2296,10 @@
                           }
                         },
                         "useCaseOther": {
-                          "type": ["string", "null"]
+                          "type": [
+                            "string",
+                            "null"
+                          ]
                         }
                       }
                     }
@@ -2021,7 +2307,9 @@
                 },
                 "example": {
                   "data": {
-                    "useCase": ["bookkeeping"],
+                    "useCase": [
+                      "bookkeeping"
+                    ],
                     "useCaseOther": null
                   }
                 }
@@ -2059,6 +2347,23 @@
       }
     }
   },
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Bankstatemently API",
+    "version": "1.0.0",
+    "description": "[Bankstatemently - PDF to CSV Bank Statement Converter](https://bankstatemently.com)\n\nConvert bank statement PDFs into structured data. Upload a PDF, poll for completion, then export as JSON, CSV, XLSX, QBO, or Xero-compatible formats.\n\nFull docs: [bankstatemently.com/developers/api](https://bankstatemently.com/developers/api)"
+  },
+  "servers": [
+    {
+      "url": "https://api.bankstatemently.com/v1",
+      "description": "Production"
+    }
+  ],
+  "security": [
+    {
+      "apiKey": []
+    }
+  ],
   "components": {
     "securitySchemes": {
       "apiKey": {
@@ -2081,7 +2386,9 @@
         "description": "The API version used to process this request. Always `1` for v1 endpoints.",
         "schema": {
           "type": "string",
-          "enum": ["1"]
+          "enum": [
+            "1"
+          ]
         },
         "example": "1"
       },
@@ -2089,7 +2396,9 @@
         "description": "Present and set to `true` when the response was served from the idempotency cache rather than reprocessed.",
         "schema": {
           "type": "string",
-          "enum": ["true"]
+          "enum": [
+            "true"
+          ]
         }
       },
       "Retry-After": {
@@ -2124,17 +2433,32 @@
     "schemas": {
       "DocumentStatus": {
         "type": "string",
-        "enum": ["processing", "completed", "failed", "password_required"],
+        "enum": [
+          "processing",
+          "completed",
+          "failed",
+          "password_required"
+        ],
         "description": "The processing status of a document."
       },
       "ExportFormat": {
         "type": "string",
-        "enum": ["json", "csv", "xlsx", "qbo", "xero"],
+        "enum": [
+          "json",
+          "csv",
+          "xlsx",
+          "qbo",
+          "xero"
+        ],
         "description": "Supported export formats."
       },
       "ExportDataMode": {
         "type": "string",
-        "enum": ["original", "enhanced", "normalized"],
+        "enum": [
+          "original",
+          "enhanced",
+          "normalized"
+        ],
         "default": "enhanced",
         "description": "The data mode to export. `original` returns raw extracted data; `enhanced` (default) includes AI-enriched fields; `normalized` applies standardized formatting."
       },
@@ -2178,11 +2502,18 @@
       },
       "ErrorResponse": {
         "type": "object",
-        "required": ["error"],
+        "required": [
+          "error"
+        ],
         "properties": {
           "error": {
             "type": "object",
-            "required": ["type", "code", "message", "request_id"],
+            "required": [
+              "type",
+              "code",
+              "message",
+              "request_id"
+            ],
             "properties": {
               "type": {
                 "$ref": "#/components/schemas/ApiErrorType"
@@ -2233,12 +2564,21 @@
             "format": "uri"
           }
         },
-        "required": ["json", "csv", "xlsx", "qbo", "xero"]
+        "required": [
+          "json",
+          "csv",
+          "xlsx",
+          "qbo",
+          "xero"
+        ]
       },
       "StatementPeriod": {
         "type": "object",
         "description": "The date range covered by a single statement within the document.",
-        "required": ["from", "to"],
+        "required": [
+          "from",
+          "to"
+        ],
         "properties": {
           "from": {
             "type": "string",
@@ -2255,7 +2595,9 @@
       "StatementSummary": {
         "type": "object",
         "description": "Summary of a single bank statement found within the uploaded document.",
-        "required": ["index"],
+        "required": [
+          "index"
+        ],
         "properties": {
           "index": {
             "type": "integer",
@@ -2274,7 +2616,10 @@
             "description": "The date range of the statement, or null if not detected."
           },
           "transactionCount": {
-            "type": ["integer", "null"],
+            "type": [
+              "integer",
+              "null"
+            ],
             "minimum": 0,
             "description": "Number of transactions in this statement, or null if not yet counted."
           }
@@ -2285,23 +2630,38 @@
         "description": "Metadata about the uploaded document, populated once processing completes.",
         "properties": {
           "bank": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "Detected bank or financial institution name."
           },
           "country": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "Detected country code (ISO 3166-1 alpha-2)."
           },
           "currency": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "Detected currency code (ISO 4217)."
           },
           "documentType": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "Detected document type (e.g., `bank-statement`, `credit-card-statement`)."
           },
           "pageCount": {
-            "type": ["integer", "null"],
+            "type": [
+              "integer",
+              "null"
+            ],
             "minimum": 1,
             "description": "Number of pages in the uploaded PDF."
           },
@@ -2320,7 +2680,14 @@
       "StatementUploadResponse": {
         "type": "object",
         "description": "Response returned when a PDF is successfully accepted for processing.",
-        "required": ["id", "status", "contentHash", "createdAt", "statements", "links"],
+        "required": [
+          "id",
+          "status",
+          "contentHash",
+          "createdAt",
+          "statements",
+          "links"
+        ],
         "properties": {
           "id": {
             "type": "string",
@@ -2348,7 +2715,9 @@
           },
           "links": {
             "type": "object",
-            "required": ["self"],
+            "required": [
+              "self"
+            ],
             "properties": {
               "self": {
                 "type": "string",
@@ -2367,7 +2736,15 @@
       "StatementDetailResponse": {
         "type": "object",
         "description": "Full document status including statement metadata and export URLs when completed.",
-        "required": ["id", "status", "contentHash", "createdAt", "updatedAt", "statements", "links"],
+        "required": [
+          "id",
+          "status",
+          "contentHash",
+          "createdAt",
+          "updatedAt",
+          "statements",
+          "links"
+        ],
         "properties": {
           "id": {
             "type": "string",
@@ -2412,7 +2789,9 @@
           },
           "links": {
             "type": "object",
-            "required": ["self"],
+            "required": [
+              "self"
+            ],
             "properties": {
               "self": {
                 "type": "string",
@@ -2436,7 +2815,13 @@
       "StatementListItem": {
         "type": "object",
         "description": "A document summary as returned in the list endpoint.",
-        "required": ["id", "status", "contentHash", "createdAt", "updatedAt"],
+        "required": [
+          "id",
+          "status",
+          "contentHash",
+          "createdAt",
+          "updatedAt"
+        ],
         "properties": {
           "id": {
             "type": "string",
@@ -2451,16 +2836,25 @@
             "description": "Content-addressable hash of the uploaded file."
           },
           "filename": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "Original filename of the uploaded PDF."
           },
           "pageCount": {
-            "type": ["integer", "null"],
+            "type": [
+              "integer",
+              "null"
+            ],
             "minimum": 1,
             "description": "Number of pages in the uploaded PDF."
           },
           "source": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "How the document was uploaded (e.g., `api`, `web`)."
           },
           "createdAt": {
@@ -2482,7 +2876,12 @@
       "Pagination": {
         "type": "object",
         "description": "Pagination metadata for list responses.",
-        "required": ["total", "limit", "offset", "hasMore"],
+        "required": [
+          "total",
+          "limit",
+          "offset",
+          "hasMore"
+        ],
         "properties": {
           "total": {
             "type": "integer",
@@ -2509,7 +2908,10 @@
       "StatementListResponse": {
         "type": "object",
         "description": "Paginated list of documents.",
-        "required": ["data", "pagination"],
+        "required": [
+          "data",
+          "pagination"
+        ],
         "properties": {
           "data": {
             "type": "array",
@@ -2524,7 +2926,12 @@
       },
       "BenchmarkTransaction": {
         "type": "object",
-        "required": ["date", "description", "amount", "originalData"],
+        "required": [
+          "date",
+          "description",
+          "amount",
+          "originalData"
+        ],
         "properties": {
           "date": {
             "type": "string",
@@ -2539,11 +2946,14 @@
           "amount": {
             "type": "number",
             "description": "Transaction amount. Positive absolute value, or negative to indicate debit. When direction is also provided, positive amounts are treated as absolute values.",
-            "example": 12.20
+            "example": 12.2
           },
           "direction": {
             "type": "string",
-            "enum": ["credit", "debit"],
+            "enum": [
+              "credit",
+              "debit"
+            ],
             "description": "Explicit direction. If omitted, inferred from amount sign (negative = debit, positive/zero = credit). Negative amount with direction \"credit\" is rejected as contradictory."
           },
           "balance": {
@@ -2586,7 +2996,7 @@
           },
           "integrity": {
             "type": "number",
-            "description": "Structural correctness: validation checks, row coverage, polarity accuracy (0-1).",
+            "description": "Structural correctness: validation checks, row coverage, direction accuracy (0-1).",
             "example": 0.97
           },
           "fields": {
@@ -2626,7 +3036,15 @@
       },
       "BenchmarkEvaluationResult": {
         "type": "object",
-        "required": ["contentHash", "id", "datasetVersion", "difficulty", "challenges", "normalizedScore", "parsedScore"],
+        "required": [
+          "contentHash",
+          "id",
+          "datasetVersion",
+          "difficulty",
+          "challenges",
+          "normalizedScore",
+          "parsedScore"
+        ],
         "properties": {
           "contentHash": {
             "type": "string",
@@ -2644,7 +3062,11 @@
           },
           "difficulty": {
             "type": "string",
-            "enum": ["basic", "intermediate", "advanced"],
+            "enum": [
+              "basic",
+              "intermediate",
+              "advanced"
+            ],
             "description": "Statement difficulty tier."
           },
           "challenges": {
@@ -2745,7 +3167,9 @@
                 "type": "rate_limit_error",
                 "code": "rate_limit_exceeded",
                 "message": "Rate limit exceeded. Retry after 12 seconds.",
-                "meta": { "retry_after": 12 },
+                "meta": {
+                  "retry_after": 12
+                },
                 "request_id": "req_6dFj8kMnR2a3bE5g"
               }
             }

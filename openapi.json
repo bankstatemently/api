@@ -21,7 +21,7 @@
       "post": {
         "operationId": "uploadDocument",
         "summary": "Upload a bank statement PDF",
-        "description": "Upload a PDF bank statement for conversion. The file is processed asynchronously. Poll the returned `id` via GET /v1/documents/{id} to check progress. Rate limit: 10 requests per minute.",
+        "description": "Upload a PDF bank statement for conversion. The file is processed asynchronously. Poll the returned `id` via GET /v1/documents/{id} to check progress. Rate limit: 10 requests per minute. Alternatively, POST a JSON body `{ \"upload_id\": \"...\" }` referencing a token minted via POST /v1/upload-tokens, to convert a previously-PUT file by reference.",
         "tags": ["Documents"],
         "parameters": [
           {
@@ -81,6 +81,23 @@
                 "type": "string",
                 "format": "binary",
                 "description": "The raw PDF bank statement bytes. Set Content-Type to application/pdf."
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["upload_id"],
+                "properties": {
+                  "upload_id": {
+                    "type": "string",
+                    "description": "An upload_id from POST /v1/upload-tokens, after PUTting the file to its upload_url. Converts the previously-uploaded file by reference instead of sending PDF bytes in this request."
+                  },
+                  "webhook_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Webhook URL for processing completion notifications. Overrides the default webhook URL configured on the API key."
+                  }
+                }
               }
             }
           }
@@ -400,6 +417,67 @@
                     "offset": 0,
                     "hasMore": true
                   }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/upload-tokens": {
+      "post": {
+        "operationId": "mintUploadToken",
+        "summary": "Mint a single-use upload token",
+        "description": "Mints a single-use, expiring upload token for hosts with no direct byte-upload equivalent (e.g. an agent sandbox with outbound-only network access). PUT the PDF to the returned upload_url, then POST /v1/documents with `{ \"upload_id\": \"...\" }` to convert it by reference. Tokens expire after ~2 hours and are single-use — PUTting a second file overwrites the first, but converting consumes the token. No credit is deducted on mint; credits are charged only at conversion. Rate limit: 20 requests per minute.",
+        "tags": ["Documents"],
+        "responses": {
+          "201": {
+            "description": "Upload token minted.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["upload_id", "upload_url", "expires_at", "max_bytes"],
+                  "properties": {
+                    "upload_id": {
+                      "type": "string",
+                      "description": "Pass this to POST /v1/documents as { \"upload_id\": ... } to convert the uploaded file."
+                    },
+                    "upload_url": {
+                      "type": "string",
+                      "format": "uri",
+                      "description": "PUT the raw PDF bytes here, with Content-Type: application/pdf."
+                    },
+                    "expires_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "When this token expires (~2 hours from mint)."
+                    },
+                    "max_bytes": {
+                      "type": "integer",
+                      "description": "Maximum PDF size in bytes this token accepts, derived from the caller's plan."
+                    }
+                  }
+                },
+                "example": {
+                  "upload_id": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
+                  "upload_url": "https://api.bankstatemently.com/uploads/7f3a...c9",
+                  "expires_at": "2026-08-10T14:00:00.000Z",
+                  "max_bytes": 52428800
                 }
               }
             }

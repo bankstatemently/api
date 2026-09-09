@@ -2345,6 +2345,84 @@
           }
         }
       }
+    },
+    "/tools/{name}": {
+      "post": {
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "description": "Tool name, exactly as served by the hosted MCP server's `tools/list` (e.g. `convert_statement`, `get_credits`, `list_transactions`).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "description": "The named tool's own arguments, exactly as documented by `tools/list`'s per-tool `inputSchema`. No fixed shape is declared here — every tool has a different one."
+              }
+            }
+          }
+        },
+        "operationId": "callTool",
+        "summary": "Call a hosted tool by name",
+        "description": "Dispatches a `tools/call` against the SAME tool registry the hosted MCP server (`/mcp`) and the self-contained stdio server (`@bankstatemently/mcp`) serve — the generic surface a local/offline MCP client uses to reach every hosted tool without a bespoke per-tool REST endpoint. Returns the tool's result verbatim: `content`, `structuredContent`, `isError`, `_meta`. HTTP 200 whether the tool itself succeeded or failed — MCP tool failures are results, never a distinct HTTP status. Rate limit: 60 requests per minute.",
+        "tags": [
+          "Tools"
+        ],
+        "responses": {
+          "200": {
+            "description": "The tool's CallToolResult, unwrapped by no one.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "content"
+                  ],
+                  "properties": {
+                    "content": {
+                      "type": "array",
+                      "description": "MCP content blocks — text/structured content the tool produced."
+                    },
+                    "structuredContent": {
+                      "type": "object",
+                      "description": "The tool's structured (JSON) result, when it declares an outputSchema."
+                    },
+                    "isError": {
+                      "type": "boolean",
+                      "description": "True when the tool itself failed (auth required, invalid arguments, downstream error) — still HTTP 200."
+                    },
+                    "_meta": {
+                      "type": "object",
+                      "description": "Protocol metadata, e.g. the auth-error `mcp/www_authenticate` hint."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
     }
   },
   "openapi": "3.1.0",
@@ -3248,6 +3326,10 @@
     {
       "name": "Benchmark",
       "description": "Evaluate parsed transactions against the Bankstatemently open benchmark for bank statement parsing."
+    },
+    {
+      "name": "Tools",
+      "description": "Call any hosted MCP tool by name — the generic surface behind the self-contained stdio server and every other non-`/mcp` client."
     }
   ]
 }

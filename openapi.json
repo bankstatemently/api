@@ -1634,6 +1634,95 @@
         }
       }
     },
+    "/product-rating": {
+      "put": {
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "rating": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5
+                  }
+                },
+                "required": [
+                  "rating"
+                ]
+              },
+              "example": {
+                "rating": 5
+              }
+            }
+          }
+        },
+        "operationId": "putProductRating",
+        "summary": "Submit or update your rating of Bankstatemently",
+        "description": "Submits (or updates) the caller's own 1-5 rating of the product as a whole, not of one document. One rating is stored per user; a later call replaces it. Rate limit: 10 requests per minute.",
+        "tags": [
+          "Feedback"
+        ],
+        "responses": {
+          "200": {
+            "description": "Rating stored.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "rating": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 5
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "rating": 5
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid rating.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameters",
+                    "message": "Invalid parameters: rating: Number must be less than or equal to 5.",
+                    "request_id": "req_5fCh8jLn0pRt2vXz"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
     "/benchmark/evaluate": {
       "post": {
         "requestBody": {
@@ -3322,6 +3411,10 @@
     {
       "name": "Credits",
       "description": "Check your credit balance and plan information."
+    },
+    {
+      "name": "Feedback",
+      "description": "Rate Bankstatemently."
     },
     {
       "name": "Benchmark",

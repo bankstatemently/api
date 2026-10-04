@@ -2010,36 +2010,6 @@
                     "minimum": 1,
                     "maximum": 5,
                     "description": "1-5 star rating for this conversion."
-                  },
-                  "exportFormat": {
-                    "type": "string",
-                    "enum": [
-                      "csv",
-                      "xlsx",
-                      "qbo",
-                      "xero"
-                    ]
-                  },
-                  "useCase": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "enum": [
-                        "bookkeeping",
-                        "tax_preparation",
-                        "financial_analysis",
-                        "audit_compliance",
-                        "reconciliation",
-                        "personal_finance",
-                        "data_migration",
-                        "other"
-                      ]
-                    },
-                    "description": "Tags describing what the converted data is used for."
-                  },
-                  "useCaseOther": {
-                    "type": "string",
-                    "maxLength": 500
                   }
                 },
                 "required": [
@@ -2054,7 +2024,7 @@
         },
         "operationId": "putDocumentRating",
         "summary": "Submit or update your rating for a document",
-        "description": "Submits (or updates) the caller's own 1-5 rating for a completed document. Changing the rating clears any previously-stored feedback for it (feedback is tied to the rating it was given for). Requires the caller's own document to be in `completed` status. Rate limit: 10 requests per minute.",
+        "description": "Submits (or updates) the caller's own 1-5 rating for a completed document. Re-rating overwrites your stored rating and keeps any feedback already stored for it. Requires the caller's own document to be in `completed` status. Rate limit: 10 requests per minute.",
         "tags": [
           "Documents"
         ],
@@ -2338,15 +2308,6 @@
                   "useCaseOther": {
                     "type": "string",
                     "maxLength": 500
-                  },
-                  "exportFormat": {
-                    "type": "string",
-                    "enum": [
-                      "csv",
-                      "xlsx",
-                      "qbo",
-                      "xero"
-                    ]
                   }
                 },
                 "required": [
@@ -2454,8 +2415,8 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true,
-                "description": "The named tool's own arguments, exactly as documented by `tools/list`'s per-tool `inputSchema`. No fixed shape is declared here — every tool has a different one."
+                "description": "The named tool's own arguments, exactly as documented by `tools/list`'s per-tool `inputSchema`. No fixed shape is declared here — every tool has a different one.",
+                "additionalProperties": true
               }
             }
           }

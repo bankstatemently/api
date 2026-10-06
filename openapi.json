@@ -1647,6 +1647,10 @@
                     "type": "integer",
                     "minimum": 1,
                     "maximum": 5
+                  },
+                  "feedback": {
+                    "type": "string",
+                    "maxLength": 1000
                   }
                 },
                 "required": [
@@ -1661,7 +1665,7 @@
         },
         "operationId": "putProductRating",
         "summary": "Submit or update your rating of Bankstatemently",
-        "description": "Submits (or updates) the caller's own 1-5 rating of the product as a whole, not of one document. One rating is stored per user; a later call replaces it. Rate limit: 10 requests per minute.",
+        "description": "Submits (or updates) the caller's own 1-5 rating of the product as a whole, not of one document. One rating is stored per user; a later call replaces the rating, and replaces the stored feedback only when the call carries `feedback`. Permission to quote is asked on our own page only and is not accepted here. Rate limit: 10 requests per minute.",
         "tags": [
           "Feedback"
         ],
@@ -2158,7 +2162,7 @@
         },
         "operationId": "patchDocumentRatingFeedback",
         "summary": "Submit structured feedback on your rating",
-        "description": "Adds structured feedback (categories and/or free text) to the caller's own existing rating. Only accepted when the caller's own rating is 3 or below. Rate limit: 10 requests per minute.",
+        "description": "Adds feedback (categories and/or free text) to the caller's own existing rating, at any rating. Rate limit: 10 requests per minute.",
         "tags": [
           "Documents"
         ],
@@ -2233,24 +2237,6 @@
                     "type": "invalid_request_error",
                     "code": "rating_not_found",
                     "message": "Rating not found.",
-                    "request_id": "req_5fCh8jLn0pRt2vXz"
-                  }
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Feedback is only accepted for ratings of 3 or below.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "error": {
-                    "type": "invalid_request_error",
-                    "code": "feedback_rating_too_high",
-                    "message": "Feedback is only accepted for ratings of 3 or below.",
                     "request_id": "req_5fCh8jLn0pRt2vXz"
                   }
                 }

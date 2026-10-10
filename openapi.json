@@ -777,6 +777,7 @@
                                 "payload": {
                                   "kind": "balance:closing",
                                   "amount": 4250.75,
+                                  "direction": "credit",
                                   "currency": "SGD"
                                 },
                                 "ownership": {
@@ -796,6 +797,7 @@
                                     "payload": {
                                       "kind": "balance:opening",
                                       "amount": 5000,
+                                      "direction": "credit",
                                       "currency": "SGD"
                                     },
                                     "ownership": {
@@ -806,6 +808,7 @@
                                     "payload": {
                                       "kind": "balance:closing",
                                       "amount": 4250.75,
+                                      "direction": "credit",
                                       "currency": "SGD"
                                     },
                                     "ownership": {
@@ -877,6 +880,7 @@
                           "payload": {
                             "kind": "balance:opening",
                             "amount": 5000,
+                            "direction": "credit",
                             "currency": "SGD"
                           },
                           "ownership": {
@@ -887,6 +891,7 @@
                           "payload": {
                             "kind": "balance:closing",
                             "amount": 4250.75,
+                            "direction": "credit",
                             "currency": "SGD"
                           },
                           "ownership": {
